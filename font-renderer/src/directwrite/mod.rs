@@ -35,6 +35,7 @@ use winapi::{IDWriteFontFile, IDWriteFontFileEnumerator, IDWriteFontFileEnumerat
 use winapi::{IDWriteFontFileLoader, IDWriteFontFileLoaderVtbl, IDWriteFontFileStream};
 use winapi::{IDWriteFontFileStreamVtbl, IDWriteGeometrySink, IUnknown, IUnknownVtbl, TRUE, UINT16};
 use winapi::{UINT32, UINT64, UINT};
+use widestring::WideCString;
 
 use self::com::{PathfinderCoclass, PathfinderComObject, PathfinderComPtr};
 use {FontInstance, GlyphDimensions, GlyphImage, GlyphKey};
@@ -172,6 +173,63 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
             if !winerror::SUCCEEDED(result) {
                 return Err(())
             }
+
+            self.dwrite_font_faces.insert((*font_key).clone(), font_face);
+            Ok(())
+        }
+    }
+    /// Loads a font from system font collection.
+    /// 
+    /// `font_key` is a handle that is used to refer to the font later. If this context has already
+    /// loaded a font with the same font key, nothing is done, and `Ok` is returned.
+    /// 
+    /// `name` is the family name of the font.
+    /// 
+    /// `font_index` is the index of the font within the collection, if `bytes` refers to a
+    /// collection (`.ttc`).
+    pub fn add_system_font(&mut self, font_key: &FK, name: &str, _: u32) -> Result<(), ()> {
+        unsafe {
+            let mut font_collection = ptr::null_mut();
+            let result = (**self.dwrite_factory).GetSystemFontCollection(
+                &mut font_collection, FALSE);
+            if !winerror::SUCCEEDED(result) {
+                return Err(())
+            }
+            let font_collection = PathfinderComPtr::new(font_collection);
+
+            let mut font_family_index = 0;
+            let mut exists = 0;
+            let family_name = WideCString::from_str(name).unwrap();
+            let result = (**font_collection).FindFamilyName(
+                family_name.as_ptr(), &mut font_family_index, &mut exists);
+            if !winerror::SUCCEEDED(result) {
+                return Err(())
+            }
+            if exists == FALSE {
+                return Err(())
+            }
+            
+            let mut font_family = ptr::null_mut();
+            let result = (**font_collection).GetFontFamily(
+                font_family_index, &mut font_family);
+            if !winerror::SUCCEEDED(result) {
+                return Err(())
+            }
+            let font_family = PathfinderComPtr::new(font_family);
+
+            let mut font = ptr::null_mut();
+            let result = (**font_family).GetFont(0, &mut font);
+            if !winerror::SUCCEEDED(result) {
+                return Err(())
+            }
+            let font = PathfinderComPtr::new(font);
+
+            let mut font_face = ptr::null_mut();
+            let result = (**font).CreateFontFace(&mut font_face);
+            if !winerror::SUCCEEDED(result) {
+                return Err(())
+            }
+            let font_face = PathfinderComPtr::new(font_face);
 
             self.dwrite_font_faces.insert((*font_key).clone(), font_face);
             Ok(())

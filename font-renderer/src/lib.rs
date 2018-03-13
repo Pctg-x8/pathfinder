@@ -52,6 +52,8 @@ extern crate uuid;
 #[cfg(target_os = "windows")]
 #[macro_use(DEFINE_GUID)]
 extern crate winapi;
+#[cfg(target_os = "windows")]
+extern crate widestring;
 
 use app_units::Au;
 use euclid::{Point2D, Size2D};
