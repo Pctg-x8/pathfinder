@@ -102,6 +102,7 @@ impl BQuad {
     }
 }
 
+#[repr(C)]
 #[derive(Clone, Copy, PartialEq, Debug, Serialize, Deserialize)]
 pub struct BQuadVertexPositions {
     pub upper_left_vertex_position: Point2D<f32>,
