@@ -234,6 +234,17 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
         }
     }
 
+    pub fn load_glyph_indices_for_characters(&self, font_instance: &FontInstance<FK>, characters: &[u32])
+                                             -> Result<Vec<u16>, ()> {
+        let core_text_font = self.ensure_core_text_font(font_instance)?;
+
+        let mut glyphs = Vec::with_capacity(characters.len());
+        unsafe { glyphs.set_len(characters.len()); }
+        let result =
+            core_text_font.get_glyphs_for_characters(characters.as_ptr(), glyphs.as_mut_ptr(), characters.len());
+        if !result { Err(()) } else { Ok(glyphs) }
+    }
+
     /// Uses the native Core Graphics library to rasterize a glyph on CPU.
     /// 
     /// Pathfinder uses this for reference testing.
