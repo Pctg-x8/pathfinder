@@ -318,6 +318,25 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
         // TODO(pcwalton)
         Err(())
     }
+
+    pub fn load_glyph_indices_for_characters(&self, font_instance: &FontInstance<FK>, characters: &[u32])
+                                     -> Result<Vec<u16>, ()> {
+        unsafe {
+            let font_face = match self.dwrite_font_faces.get(&font_instance.font_key) {
+                None => return Err(()),
+                Some(font_face) => (*font_face).clone()
+            };
+
+            let mut glyphs = Vec::with_capacity(characters.len());
+            glyphs.set_len(characters.len());
+            let result = (**font_face).GetGlyphIndices(characters.as_ptr(), characters.len() as _, glyphs.as_mut_ptr());
+            if !winerror::SUCCEEDED(result) {
+                return Err(())
+            }
+
+            Ok(glyphs)
+        }
+    }
 }
 
 #[repr(C)]

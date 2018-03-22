@@ -252,6 +252,21 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
         }
     }
 
+    pub fn load_glyph_indices_for_characters(&self, font_instance: &FontInstance<FK>, characters: &[u32])
+                                             -> Result<Vec<u16>, ()> {
+        let face = match self.faces.get(&font_instance.font_key) {
+            None => return Err(()),
+            Some(face) => face
+        };
+
+        unsafe {
+            characters.iter().map(|c| {
+                let i = FT_Get_Char_Index(face.face, c);
+                if i == 0 { Err(()) } else { Ok(c) }
+            }).collect()
+        }
+    }
+
     fn glyph_dimensions_from_slot(&self,
                                   font_instance: &FontInstance<FK>,
                                   glyph_key: &GlyphKey,
