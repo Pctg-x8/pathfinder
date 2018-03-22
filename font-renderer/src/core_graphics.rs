@@ -234,7 +234,7 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
         }
     }
 
-    pub fn load_glyph_indices_for_characters(&self, font_instance: &FontInstance<FK>, characters: &[u16])
+    pub fn load_glyph_indices_for_characters(&mut self, font_instance: &FontInstance<FK>, characters: &[u16])
                                              -> Result<Vec<u16>, ()> {
         let core_text_font = self.ensure_core_text_font(font_instance)?;
 
