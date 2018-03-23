@@ -251,7 +251,7 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
     /// libraries (including Pathfinder) apply modifications to the outlines: for example, to
     /// dilate them for easier reading. To retrieve extents that account for these modifications,
     /// set `exact` to false.
-    pub fn glyph_dimensions(&self, font_instance: &FontInstance<FK>, glyph_key: &GlyphKey)
+    pub fn glyph_dimensions(&self, font_instance: &FontInstance<FK>, glyph_key: &GlyphKey, _exact: bool)
                             -> Option<GlyphDimensions> {
         unsafe {
             let font_face = match self.dwrite_font_faces.get(&font_instance.font_key) {
