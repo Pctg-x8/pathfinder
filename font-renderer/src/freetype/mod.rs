@@ -301,9 +301,9 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
                 origin: lower_left,
                 size: Size2D::new((upper_right.x - lower_left.x) as u32,
                                   (upper_right.y - lower_left.y) as u32),
-                advance: f32::from_ft_f26dot6(metrics.horiAdvance) /
+                advance: f32::from_ft_f26dot6(metrics.horiAdvance)/* /
                     (*(*glyph_slot).face).units_per_EM as f32 *
-                    font_instance.size.to_f32_px(),
+                    font_instance.size.to_f32_px()*/,
             })
         }
     }
