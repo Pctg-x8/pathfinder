@@ -259,6 +259,9 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
                 Some(font_face) => (*font_face).clone(),
             };
 
+            let mut font_metrics: DWRITE_FONT_METRICS = mem::zeroed();
+            (**font_face).GetMetrics(&mut font_metrics);
+
             let glyph_index = glyph_key.glyph_index as UINT16;
             let mut metrics: DWRITE_GLYPH_METRICS = mem::zeroed();
 
@@ -267,11 +270,19 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
                 return None
             }
 
+            println!("vertical origin: {:?}", metrics);
+
+            let advance = metrics.advanceWidth as f32 * font_instance.size.to_f32_px() / font_metrics.designUnitsPerEm as f32;
+            let advance_h = metrics.advanceHeight as f32 * font_instance.size.to_f32_px() / font_metrics.designUnitsPerEm as f32;
+            let left_side_bearing = metrics.leftSideBearing as f32 * font_instance.size.to_f32_px() / font_metrics.designUnitsPerEm as f32;
+            let right_side_bearing = metrics.rightSideBearing as f32 * font_instance.size.to_f32_px() / font_metrics.designUnitsPerEm as f32;
+            let bottom_side_bearing = metrics.bottomSideBearing as f32 * font_instance.size.to_f32_px() / font_metrics.designUnitsPerEm as f32;
+            let top_side_bearing = metrics.topSideBearing as f32 * font_instance.size.to_f32_px() / font_metrics.designUnitsPerEm as f32;
             Some(GlyphDimensions {
-                advance: metrics.advanceWidth as f32,
-                origin: Point2D::new(metrics.leftSideBearing, metrics.bottomSideBearing),
-                size: Size2D::new((metrics.rightSideBearing - metrics.leftSideBearing) as u32,
-                                  (metrics.topSideBearing - metrics.bottomSideBearing) as u32),
+                advance,
+                origin: Point2D::new(left_side_bearing as _, bottom_side_bearing as _),
+                size: Size2D::new((advance - right_side_bearing - left_side_bearing) as u32,
+                                  (advance_h - bottom_side_bearing - top_side_bearing) as u32),
             })
         }
     }
@@ -292,7 +303,7 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
             let glyph_index = glyph_key.glyph_index as UINT16;
 
             let result =
-                (**font_face).GetGlyphRunOutline(metrics.designUnitsPerEm as FLOAT,    
+                (**font_face).GetGlyphRunOutline(font_instance.size.to_f32_px(),    
                                                  &glyph_index,
                                                  ptr::null(),
                                                  ptr::null(),
