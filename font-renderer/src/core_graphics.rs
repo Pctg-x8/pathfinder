@@ -191,7 +191,7 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
             origin: lower_left,
             size: Size2D::new((upper_right.x - lower_left.x) as u32,
                               (upper_right.y - lower_left.y) as u32),
-            advance: advances[0] as f32,
+            advance: advances[0] as f32 * scale as f32,
         })
     }
 
