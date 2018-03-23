@@ -254,14 +254,14 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
     }
 
     pub fn load_glyph_indices_for_characters(&self, font_instance: &FontInstance<FK>, characters: &[u32])
-                                             -> Result<Vec<u16>, ()> {
+                                             -> Result<Vec<u32>, ()> {
         let face = match self.faces.get(&font_instance.font_key) {
             None => return Err(()),
             Some(face) => face
         };
 
         unsafe {
-            characters.iter().map(|c| {
+            characters.iter().map(|&c| {
                 let i = FT_Get_Char_Index(face.face, c);
                 if i == 0 { Err(()) } else { Ok(i) }
             }).collect()
