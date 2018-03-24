@@ -35,6 +35,7 @@ use winapi::{IDWriteFontFile, IDWriteFontFileEnumerator, IDWriteFontFileEnumerat
 use winapi::{IDWriteFontFileLoader, IDWriteFontFileLoaderVtbl, IDWriteFontFileStream};
 use winapi::{IDWriteFontFileStreamVtbl, IDWriteGeometrySink, IUnknown, IUnknownVtbl, TRUE, UINT16};
 use winapi::{UINT32, UINT64, UINT};
+use winapi::{DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL};
 use widestring::WideCString;
 
 use self::com::{PathfinderCoclass, PathfinderComObject, PathfinderComPtr};
@@ -218,7 +219,10 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
             let font_family = PathfinderComPtr::new(font_family);
 
             let mut font = ptr::null_mut();
-            let result = (**font_family).GetFont(0, &mut font);
+            // let result = (**font_family).GetFont(0, &mut font);
+            let result = (**font_family).GetFirstMatchingFont(
+                DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL,
+                &mut font);
             if !winerror::SUCCEEDED(result) {
                 return Err(())
             }
@@ -269,8 +273,6 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
             if !winerror::SUCCEEDED(result) {
                 return None
             }
-
-            println!("vertical origin: {:?}", metrics);
 
             let advance = metrics.advanceWidth as f32 * font_instance.size.to_f32_px() / font_metrics.designUnitsPerEm as f32;
             let advance_h = metrics.advanceHeight as f32 * font_instance.size.to_f32_px() / font_metrics.designUnitsPerEm as f32;
