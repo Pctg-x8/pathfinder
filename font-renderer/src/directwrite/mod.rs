@@ -350,6 +350,20 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
             Ok(glyphs)
         }
     }
+
+    pub fn pixels_per_unit(&self, font_instance: &FontInstance<FK>) -> Result<f32, ()> {
+        let font_face = match self.dwrite_font_faces.get(&font_instance.font_key) {
+            None => return Err(()),
+            Some(font_face) => (*font_face).clone()
+        };
+
+        unsafe {
+            let mut metrics: DWRITE_FONT_METRICS = mem::zeroed();
+            (**font_face).GetMetrics(&mut metrics);
+
+            return Ok(metrics.designUnitsPerEm as f32);
+        }
+    }
 }
 
 #[repr(C)]
