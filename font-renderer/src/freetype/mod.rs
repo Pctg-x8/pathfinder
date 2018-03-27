@@ -262,7 +262,7 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
 
         unsafe {
             characters.iter().map(|&c| {
-                let i = FT_Get_Char_Index(face.face, c);
+                let i = FT_Get_Char_Index(face.face, c as _);
                 if i == 0 { Err(()) } else { Ok(i) }
             }).collect()
         }
