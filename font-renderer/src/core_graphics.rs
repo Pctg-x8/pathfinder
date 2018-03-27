@@ -245,6 +245,12 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
         if !result { Err(()) } else { Ok(glyphs) }
     }
 
+    pub fn pixels_per_unit(&mut self, font_instance: &FontInstance<FK>) -> Result<f32, ()> {
+        let core_text_font = self.ensure_core_text_font(font_instance)?;
+
+        Ok(font_instance.size.to_f32_px() / core_text_font.units_per_em() as f32)
+    }
+
     /// Uses the native Core Graphics library to rasterize a glyph on CPU.
     /// 
     /// Pathfinder uses this for reference testing.
