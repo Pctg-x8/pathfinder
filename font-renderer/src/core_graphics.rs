@@ -250,6 +250,13 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
 
         Ok(font_instance.size.to_f32_px() / core_text_font.units_per_em() as f32)
     }
+    pub fn x_height(&mut self, font_instance: &FontInstance<FK>) -> Result<f64, ()> {
+        self.ensure_core_text_font(font_instance).map(|f| f.x_height())
+    }
+    // todo: fix cap-height value
+    pub fn cap_height(&mut self, font_instance: &FontInstance<FK>) -> Result<f64, ()> {
+        self.ensure_core_text_font(font_instance).map(|f| f.x_height() * 1.5)
+    }
 
     /// Uses the native Core Graphics library to rasterize a glyph on CPU.
     /// 
