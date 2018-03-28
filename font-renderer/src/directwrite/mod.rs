@@ -351,7 +351,7 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
         }
     }
 
-    pub fn pixels_per_unit(&self, font_instance: &FontInstance<FK>) -> Result<f32, ()> {
+    fn font_metrics(&self, font_instance: &FontInstance<FK>) -> DWRITE_FONT_METRICS {
         let font_face = match self.dwrite_font_faces.get(&font_instance.font_key) {
             None => return Err(()),
             Some(font_face) => (*font_face).clone()
@@ -360,9 +360,18 @@ impl<FK> FontContext<FK> where FK: Clone + Hash + Eq + Ord {
         unsafe {
             let mut metrics: DWRITE_FONT_METRICS = mem::zeroed();
             (**font_face).GetMetrics(&mut metrics);
-
-            return Ok(metrics.designUnitsPerEm as f32);
+            return Ok(metrics);
         }
+    }
+
+    pub fn pixels_per_unit(&self, font_instance: &FontInstance<FK>) -> Result<f32, ()> {
+        Ok(self.font_metrics(font_instance).designUnitsPerEm as f32)
+    }
+    pub fn x_height(&self, font_instance: &FontInstance<FK>) -> Result<u32, ()> {
+        Ok(self.font_metrics(font_instance).xHeight as u32)
+    }
+    pub fn cap_height(&self, font_instance: &FontInstance<FK>) -> Result<u32, ()> {
+        Ok(self.font_metrics(font_instance).capHeight as u32)
     }
 }
 
